@@ -36,7 +36,7 @@ pub fn generate(path: &str, cols: u16, rows: u64) -> Result<(), Box<dyn std::err
     let handle = std::thread::spawn(move || workbook.save(&path));
 
     match handle.join().unwrap() {
-        Ok(()) => spinner.finish_with_message("saved"),
+        Ok(()) => spinner.finish_with_message("✅ saved"),
         Err(e) => {
             spinner.finish_with_message("save failed");
             return Err(Box::new(e));
