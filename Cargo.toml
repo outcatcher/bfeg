@@ -6,5 +6,6 @@ description = "Big Fucking Excel Generator — generates .xlsx files of arbitrar
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
 rand = "0.9"
-rust_xlsxwriter = "0.83"
+rust_xlsxwriter = { version = "0.83", features = ["zlib"] }
