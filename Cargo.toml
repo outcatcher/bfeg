@@ -1,0 +1,10 @@
+[package]
+name = "bfeg"
+version = "0.1.0"
+edition = "2024"
+description = "Big Fucking Excel Generator — generates .xlsx files of arbitrary size with random data."
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+rand = "0.9"
+rust_xlsxwriter = "0.83"
