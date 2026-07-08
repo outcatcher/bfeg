@@ -71,14 +71,24 @@ fn main() {
     let cols = pick_cols(args.cols);
 
     // -- calibration --
-    let per_cell = calibrator::calibrate(cols).unwrap_or_else(|e| {
+    let rough_per_cell = 12.0; // initial rough estimate
+    let est_rows = (target_bytes as f64 / rough_per_cell / cols as f64).ceil() as u64;
+    let sample_rows = ((est_rows as f64 * 0.05).ceil() as u64).max(1000);
+
+    let per_cell = calibrator::calibrate(cols, sample_rows).unwrap_or_else(|e| {
         eprintln!("calibration failed: {e}");
         process::exit(1);
     });
 
-    // pad 5% to guard against random variance
-    let padded = (target_bytes as f64 * 1.05) as u64;
-    let cells_needed = (padded as f64 / per_cell).ceil() as u64;
+    eprintln!(
+        "calibrated: {:.1} bytes/cell from {sample_rows} sample rows",
+        per_cell,
+    );
+
+    // compression gets more efficient at scale — adjust down
+    let per_cell = per_cell * 0.97;
+
+    let cells_needed = (target_bytes as f64 / per_cell).ceil() as u64;
     let rows = (cells_needed + cols as u64 - 1) / cols as u64;
 
     eprintln!(
