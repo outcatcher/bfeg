@@ -2,11 +2,11 @@ use crate::random;
 use indicatif::{ProgressBar, ProgressStyle};
 use rust_xlsxwriter::Workbook;
 
-const CALIB_PATH: &str = "/tmp/bfeg_calib.xlsx";
-
 /// Write a sample file of `sample_rows` and measure bytes-per-cell.
 /// Cleans up the temp file on success.
 pub fn calibrate(cols: u16, sample_rows: u64) -> Result<f64, Box<dyn std::error::Error>> {
+    let calib_path = std::env::temp_dir().join("bfeg_calib.xlsx");
+
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
 
@@ -36,7 +36,7 @@ pub fn calibrate(cols: u16, sample_rows: u64) -> Result<f64, Box<dyn std::error:
     spinner.set_message("saving calibration sample...");
     spinner.enable_steady_tick(std::time::Duration::from_millis(100));
 
-    let path = CALIB_PATH.to_owned();
+    let path = calib_path.to_str().ok_or("invalid temp path")?.to_owned();
     let handle = std::thread::spawn(move || workbook.save(&path));
 
     match handle.join().unwrap() {
@@ -47,10 +47,10 @@ pub fn calibrate(cols: u16, sample_rows: u64) -> Result<f64, Box<dyn std::error:
         }
     }
 
-    let file_size = std::fs::metadata(CALIB_PATH)?.len();
+    let file_size = std::fs::metadata(&calib_path)?.len();
     let total_cells = (sample_rows + 1) * cols as u64; // +1 header
     let per_cell = file_size as f64 / total_cells as f64;
 
-    let _ = std::fs::remove_file(CALIB_PATH);
+    let _ = std::fs::remove_file(&calib_path);
     Ok(per_cell)
 }
